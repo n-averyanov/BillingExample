@@ -1,0 +1,66 @@
+package ru.n_aver.billingexample.ui.main
+
+import androidx.lifecycle.ViewModelProvider
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.asLiveData
+import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
+import ru.n_aver.billingexample.R
+import ru.n_aver.billingexample.databinding.MainFragmentBinding
+
+@AndroidEntryPoint
+class MainFragment : Fragment() {
+
+    private val viewModel: MainViewModel by viewModels()
+    private var binding: MainFragmentBinding? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = MainFragmentBinding.inflate(inflater, container, false)
+        binding?.purchasesList?.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter =
+                PurchasesAdapter(PurchasesAdapter.BuyButtonListener { skuDetails ->
+                    viewModel.startBillingFlow(requireActivity(), skuDetails)
+                })
+        }
+        return binding?.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.availablePurchases.asLiveData().observe(viewLifecycleOwner) { skuDetails ->
+            (binding?.purchasesList?.adapter as PurchasesAdapter).data = skuDetails
+        }
+
+        viewModel.purchases.asLiveData().observe(viewLifecycleOwner) { purshases ->
+            when (purshases.size) {
+                1 -> Toast.makeText(context, "You purchase item", Toast.LENGTH_LONG).show()
+                0 -> {}
+                else -> Toast.makeText(
+                    context,
+                    "You somehow purchase more than two items. Congratulations!",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    companion object {
+        fun newInstance() = MainFragment()
+    }
+}
