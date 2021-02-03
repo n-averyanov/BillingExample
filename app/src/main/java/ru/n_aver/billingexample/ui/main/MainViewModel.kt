@@ -2,6 +2,7 @@ package ru.n_aver.billingexample.ui.main
 
 import android.app.Activity
 import androidx.lifecycle.ViewModel
+import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ru.n_aver.billingexample.BillingManager
@@ -16,4 +17,6 @@ class MainViewModel @Inject constructor(
 
     fun startBillingFlow(activity: Activity, skuDetails: SkuDetails) =
         billingManager.launchBillingFlow(activity, skuDetails)
+
+    fun consumePurchase(purchases: List<Purchase>) = billingManager.consumePurchases(purchases)
 }

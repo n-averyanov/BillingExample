@@ -46,20 +46,26 @@ class MainFragment : Fragment() {
             viewModel.availablePurchases.collect { skuDetails ->
                 (binding?.purchasesList?.adapter as PurchasesAdapter).data = skuDetails
             }
+        }
 
-            viewModel.purchases.collect { purshases ->
-                when (purshases.size) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.purchases.collect { purchases ->
+                when (purchases.size) {
                     1 -> {
                         Toast.makeText(context, "You purchase item", Toast.LENGTH_LONG).show()
-                        binding?.lastPurchasedItem?.text = purshases.first().orderId
+                        binding?.lastPurchasedItem?.text = purchases.first().orderId
+                        viewModel.consumePurchase(purchases)
                     }
                     0 -> {
                     }
-                    else -> Toast.makeText(
-                        context,
-                        "You somehow purchase more than one item. Congratulations!",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    else -> {
+                        Toast.makeText(
+                            context,
+                            "You somehow purchase more than one item. Congratulations!",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        viewModel.consumePurchase(purchases)
+                    }
                 }
 
             }

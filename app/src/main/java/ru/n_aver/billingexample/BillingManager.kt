@@ -69,6 +69,15 @@ class BillingManager @Inject constructor(
         }
     }
 
+    fun consumePurchases(purchases: List<Purchase>) {
+        purchases.forEach { purchase ->
+            billingClient.consumeAsync(
+                ConsumeParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
+            ) { _, _ ->
+            }
+        }
+    }
+
     @MainThread
     fun launchBillingFlow(
         activity: Activity,
