@@ -8,10 +8,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.android.billingclient.api.*
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.n_aver.billingexample.models.Purchases
 import javax.inject.Inject
@@ -48,7 +45,10 @@ class BillingManager @Inject constructor(
             inAppRequest
         ) { billingResult, skuDetailsList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                Log.i("BillingManager", skuDetailsList?.toString() ?: "Epmty sku")
                 skuDetailsStateFlow.value = skuDetailsList ?: listOf()
+            } else {
+                Log.i("BillingManager", billingResult.responseCode.toString())
             }
         }
     }
@@ -59,6 +59,7 @@ class BillingManager @Inject constructor(
         billingClient.startConnection(this)
     }
 
+    @ExperimentalCoroutinesApi
     override fun onPurchasesUpdated(
         billingResult: BillingResult,
         purchases: MutableList<Purchase>?

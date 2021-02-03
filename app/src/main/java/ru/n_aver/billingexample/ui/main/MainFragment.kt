@@ -2,6 +2,7 @@ package ru.n_aver.billingexample.ui.main
 
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -9,8 +10,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import ru.n_aver.billingexample.R
 import ru.n_aver.billingexample.databinding.MainFragmentBinding
 
@@ -38,19 +42,26 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.availablePurchases.asLiveData().observe(viewLifecycleOwner) { skuDetails ->
-            (binding?.purchasesList?.adapter as PurchasesAdapter).data = skuDetails
-        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.availablePurchases.collect { skuDetails ->
+                (binding?.purchasesList?.adapter as PurchasesAdapter).data = skuDetails
+            }
 
-        viewModel.purchases.asLiveData().observe(viewLifecycleOwner) { purshases ->
-            when (purshases.size) {
-                1 -> Toast.makeText(context, "You purchase item", Toast.LENGTH_LONG).show()
-                0 -> {}
-                else -> Toast.makeText(
-                    context,
-                    "You somehow purchase more than two items. Congratulations!",
-                    Toast.LENGTH_LONG
-                ).show()
+            viewModel.purchases.collect { purshases ->
+                when (purshases.size) {
+                    1 -> {
+                        Toast.makeText(context, "You purchase item", Toast.LENGTH_LONG).show()
+                        binding?.lastPurchasedItem?.text = purshases.first().orderId
+                    }
+                    0 -> {
+                    }
+                    else -> Toast.makeText(
+                        context,
+                        "You somehow purchase more than one item. Congratulations!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
             }
         }
     }
